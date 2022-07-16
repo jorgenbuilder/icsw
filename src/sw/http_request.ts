@@ -2,26 +2,30 @@
  * Implement the HttpRequest to Canisters Proposal.
  *
  */
-import { Actor, ActorSubclass, HttpAgent } from '@dfinity/agent';
-import { Principal } from '@dfinity/principal';
-import { validateBody } from './validation';
-import * as base64Arraybuffer from 'base64-arraybuffer';
-import * as pako from 'pako';
+import { Actor, ActorSubclass, HttpAgent } from "@dfinity/agent";
+import { Principal } from "@dfinity/principal";
+import { validateBody } from "./validation";
+import * as base64Arraybuffer from "base64-arraybuffer";
+import * as pako from "pako";
 import {
   _SERVICE,
   HttpResponse,
-} from '../http-interface/canister_http_interface_types';
-import { idlFactory } from '../http-interface/canister_http_interface';
-import { streamContent } from './streaming';
+} from "../http-interface/canister_http_interface_types";
+import { idlFactory } from "../http-interface/canister_http_interface";
+import { streamContent } from "./streaming";
 
 const hostnameCanisterIdMap: Record<string, [string, string]> = {
-  'identity.ic0.app': ['rdmx6-jaaaa-aaaaa-aaadq-cai', 'ic0.app'],
-  'nns.ic0.app': ['qoctq-giaaa-aaaaa-aaaea-cai', 'ic0.app'],
-  'dscvr.one': ['h5aet-waaaa-aaaab-qaamq-cai', 'ic0.app'],
-  'personhood.ic0.app': ['g3wsl-eqaaa-aaaan-aaaaa-cai', 'ic0.app'],
+  "identity.ic0.app": ["rdmx6-jaaaa-aaaaa-aaadq-cai", "ic0.app"],
+  "nns.ic0.app": ["qoctq-giaaa-aaaaa-aaaea-cai", "ic0.app"],
+  "dscvr.one": ["h5aet-waaaa-aaaab-qaamq-cai", "ic0.app"],
+  "personhood.ic0.app": ["g3wsl-eqaaa-aaaan-aaaaa-cai", "ic0.app"],
+  "icsw-pcuj688gl-jorgenbuilder.vercel.app/": [
+    "dq6kg-laaaa-aaaah-aaeaq-cai",
+    "ic0.app",
+  ],
 };
 
-const shouldFetchRootKey: boolean = ['1', 'true'].includes(
+const shouldFetchRootKey: boolean = ["1", "true"].includes(
   process.env.FORCE_FETCH_ROOT_KEY
 );
 const swLocation = new URL(self.location.toString());
@@ -48,12 +52,12 @@ function splitHostnameForCanisterId(
     return [Principal.fromText(maybeFixed[0]), maybeFixed[1]];
   }
 
-  const subdomains = hostname.split('.').reverse();
+  const subdomains = hostname.split(".").reverse();
   const topdomains = [];
   for (const domain of subdomains) {
     try {
       const principal = Principal.fromText(domain);
-      return [principal, topdomains.reverse().join('.')];
+      return [principal, topdomains.reverse().join(".")];
     } catch (_) {
       topdomains.push(domain);
     }
@@ -94,7 +98,7 @@ function maybeResolveCanisterIdFromSearchParam(
     return null;
   }
 
-  const maybeCanisterId = searchParams.get('canisterId');
+  const maybeCanisterId = searchParams.get("canisterId");
   if (maybeCanisterId) {
     try {
       return Principal.fromText(maybeCanisterId);
@@ -137,11 +141,11 @@ function maybeResolveCanisterIdFromHeaders(
   headers: Headers,
   isLocal: boolean
 ): Principal | null {
-  const maybeHostHeader = headers.get('host');
+  const maybeHostHeader = headers.get("host");
   if (maybeHostHeader) {
     // Remove the port.
     const maybeCanisterId = maybeResolveCanisterIdFromHostName(
-      maybeHostHeader.replace(/:\d+$/, '')
+      maybeHostHeader.replace(/:\d+$/, "")
     );
     if (maybeCanisterId) {
       return maybeCanisterId;
@@ -149,7 +153,7 @@ function maybeResolveCanisterIdFromHeaders(
   }
 
   if (isLocal) {
-    const maybeRefererHeader = headers.get('referer');
+    const maybeRefererHeader = headers.get("referer");
     if (maybeRefererHeader) {
       const maybeCanisterId = resolveCanisterIdFromUrl(
         maybeRefererHeader,
@@ -182,12 +186,12 @@ function maybeResolveCanisterIdFromHttpRequest(
  */
 function decodeBody(body: Uint8Array, encoding: string): Uint8Array {
   switch (encoding) {
-    case 'identity':
-    case '':
+    case "identity":
+    case "":
       return body;
-    case 'gzip':
+    case "gzip":
       return pako.ungzip(body);
-    case 'deflate':
+    case "deflate":
       return pako.inflate(body);
     default:
       throw new Error(`Unsupported encoding: "${encoding}"`);
@@ -224,12 +228,12 @@ export async function handleRequest(request: Request): Promise<Response> {
   /**
    * We forward all requests to /api/ to the replica, as is.
    */
-  if (url.pathname.startsWith('/api/')) {
+  if (url.pathname.startsWith("/api/")) {
     const response = await fetch(request);
     // force the content-type to be cbor as /api/ is exclusively used for canister calls
     const sanitizedHeaders = new Headers(response.headers);
-    sanitizedHeaders.set('X-Content-Type-Options', 'nosniff');
-    sanitizedHeaders.set('Content-Type', 'application/cbor');
+    sanitizedHeaders.set("X-Content-Type-Options", "nosniff");
+    sanitizedHeaders.set("Content-Type", "application/cbor");
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
@@ -240,14 +244,14 @@ export async function handleRequest(request: Request): Promise<Response> {
   /**
    * We refuse any request to /_/*
    */
-  if (url.pathname.startsWith('/_/')) {
+  if (url.pathname.startsWith("/_/")) {
     return new Response(null, { status: 404 });
   }
 
   /**
    * We try to do an HTTP Request query.
    */
-  const isLocal = swDomains === 'localhost';
+  const isLocal = swDomains === "localhost";
   const maybeCanisterId = maybeResolveCanisterIdFromHttpRequest(
     request,
     isLocal
@@ -256,7 +260,7 @@ export async function handleRequest(request: Request): Promise<Response> {
     try {
       const origin = splitHostnameForCanisterId(url.hostname);
       const [agent, actor] = await createAgentAndActor(
-        origin ? url.protocol + '//' + origin[1] : url.origin,
+        origin ? url.protocol + "//" + origin[1] : url.origin,
         maybeCanisterId,
         shouldFetchRootKey
       );
@@ -266,8 +270,8 @@ export async function handleRequest(request: Request): Promise<Response> {
       );
 
       // If the accept encoding isn't given, add it because we want to save bandwidth.
-      if (!request.headers.has('Accept-Encoding')) {
-        requestHeaders.push(['Accept-Encoding', 'gzip, deflate, identity']);
+      if (!request.headers.has("Accept-Encoding")) {
+        requestHeaders.push(["Accept-Encoding", "gzip, deflate, identity"]);
       }
 
       const httpRequest = {
@@ -294,10 +298,10 @@ export async function handleRequest(request: Request): Promise<Response> {
 
       let certificate: ArrayBuffer | undefined;
       let tree: ArrayBuffer | undefined;
-      let encoding = '';
+      let encoding = "";
       for (const [key, value] of httpResponse.headers) {
         switch (key.trim().toLowerCase()) {
-          case 'ic-certificate':
+          case "ic-certificate":
             {
               const fields = value.split(/,/);
               for (const f of fields) {
@@ -306,15 +310,15 @@ export async function handleRequest(request: Request): Promise<Response> {
                 );
                 const value = base64Arraybuffer.decode(b64Value);
 
-                if (name === 'certificate') {
+                if (name === "certificate") {
                   certificate = value;
-                } else if (name === 'tree') {
+                } else if (name === "tree") {
                   tree = value;
                 }
               }
             }
             continue;
-          case 'content-encoding':
+          case "content-encoding":
             encoding = value.trim();
             break;
         }
@@ -371,11 +375,11 @@ export async function handleRequest(request: Request): Promise<Response> {
           headers,
         });
       } else {
-        console.error('BODY DOES NOT PASS VERIFICATION');
-        return new Response('Body does not pass verification', { status: 500 });
+        console.error("BODY DOES NOT PASS VERIFICATION");
+        return new Response("Body does not pass verification", { status: 500 });
       }
     } catch (e) {
-      console.error('Failed to fetch response:', e);
+      console.error("Failed to fetch response:", e);
       return new Response(`Failed to fetch response: ${String(e)}`, {
         status: 500,
       });
@@ -390,7 +394,7 @@ export async function handleRequest(request: Request): Promise<Response> {
     !url.hostname.endsWith(swDomains) ||
     url.hostname.endsWith(`raw.${swDomains}`)
   ) {
-    console.log('Direct call ...');
+    console.log("Direct call ...");
     // todo: Do we need to check for headers and certify the content here?
     return await fetch(request);
   }
@@ -398,5 +402,5 @@ export async function handleRequest(request: Request): Promise<Response> {
   console.error(
     `URL ${JSON.stringify(url.toString())} did not resolve to a canister ID.`
   );
-  return new Response('Could not find the canister ID.', { status: 404 });
+  return new Response("Could not find the canister ID.", { status: 404 });
 }
