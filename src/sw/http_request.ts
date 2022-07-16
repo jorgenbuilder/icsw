@@ -47,8 +47,7 @@ function splitHostnameForCanisterId(
   const maybeFixed = hostnameCanisterIdMap[hostname];
   console.log(
     `Searching for ${hostname} in canister id map...`,
-    maybeFixed ? maybeFixed : "found nothing.",
-    hostnameCanisterIdMap
+    maybeFixed ? maybeFixed : "found nothing."
   );
   if (maybeFixed) {
     return [Principal.fromText(maybeFixed[0]), maybeFixed[1]];
@@ -78,6 +77,10 @@ function maybeResolveCanisterIdFromHostName(
 ): Principal | null {
   // Try to resolve from the right to the left.
   const maybeCanisterId = splitHostnameForCanisterId(hostname);
+  console.log(
+    "searching for canister id in hostname...",
+    maybeCanisterId ? maybeCanisterId[0].toText() : "found nothing"
+  );
   if (maybeCanisterId && swDomains === maybeCanisterId[1]) {
     return maybeCanisterId[0];
   }
