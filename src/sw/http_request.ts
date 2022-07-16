@@ -48,6 +48,11 @@ function splitHostnameForCanisterId(
   hostname: string
 ): [Principal, string] | null {
   const maybeFixed = hostnameCanisterIdMap[hostname];
+  console.log(
+    `Searching for ${hostname} in canister id map...`,
+    maybeFixed ? maybeFixed : "found nothing.",
+    hostnameCanisterIdMap
+  );
   if (maybeFixed) {
     return [Principal.fromText(maybeFixed[0]), maybeFixed[1]];
   }
