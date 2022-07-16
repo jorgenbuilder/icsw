@@ -19,10 +19,7 @@ const hostnameCanisterIdMap: Record<string, [string, string]> = {
   "nns.ic0.app": ["qoctq-giaaa-aaaaa-aaaea-cai", "ic0.app"],
   "dscvr.one": ["h5aet-waaaa-aaaab-qaamq-cai", "ic0.app"],
   "personhood.ic0.app": ["g3wsl-eqaaa-aaaan-aaaaa-cai", "ic0.app"],
-  "icsw-pcuj688gl-jorgenbuilder.vercel.app": [
-    "dq6kg-laaaa-aaaah-aaeaq-cai",
-    "ic0.app",
-  ],
+  "icsw.vercel.app": ["dq6kg-laaaa-aaaah-aaeaq-cai", "ic0.app"],
 };
 
 const shouldFetchRootKey: boolean = ["1", "true"].includes(
