@@ -1,19 +1,19 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const webpack = require('webpack');
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const webpack = require("webpack");
 
 module.exports = {
   entry: {
-    'install-script': path.join(__dirname, 'src/index.ts'),
-    sw: path.join(__dirname, 'src/sw/sw.ts'),
+    "install-script": path.join(__dirname, "src/index.ts"),
+    sw: path.join(__dirname, "src/sw/sw.ts"),
   },
-  mode: 'production',
-  target: 'web',
-  devtool: 'source-map',
+  mode: "production",
+  target: "web",
+  devtool: "source-map",
   output: {
-    path: path.join(__dirname, 'dist'),
-    filename: '[name].js',
-    publicPath: '/',
+    path: path.join(__dirname, "dist"),
+    filename: "[name].js",
+    publicPath: "/",
   },
   module: {
     rules: [
@@ -22,32 +22,36 @@ module.exports = {
         exclude: /node_modules/,
         use: [
           {
-            loader: 'ts-loader',
+            loader: "ts-loader",
           },
         ],
+      },
+      {
+        test: /\.(png|svg|jpg|jpeg|gif|webp)$/i,
+        type: "asset/resource",
       },
     ],
   },
   resolve: {
     alias: {
-      process: 'process/browser',
+      process: "process/browser",
     },
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: [".tsx", ".ts", ".js"],
     fallback: {
-      assert: require.resolve('assert/'),
-      events: require.resolve('events/'),
-      stream: require.resolve('stream-browserify/'),
-      util: require.resolve('util/'),
+      assert: require.resolve("assert/"),
+      events: require.resolve("events/"),
+      stream: require.resolve("stream-browserify/"),
+      util: require.resolve("util/"),
     },
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'src/index.html',
-      filename: 'index.html',
-      chunks: ['install-script'],
+      template: "src/index.html",
+      filename: "index.html",
+      chunks: ["install-script"],
     }),
     new webpack.ProvidePlugin({
-      process: require.resolve('process/browser'),
+      process: require.resolve("process/browser"),
     }),
     new webpack.EnvironmentPlugin({
       FORCE_FETCH_ROOT_KEY: false,
