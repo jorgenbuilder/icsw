@@ -4,8 +4,7 @@
   "version": "1.2.0",
   "license": "Apache-2.0",
   "files": [
-    "dist-dev",
-    "dist-prod",
+    "dist",
     "README.md",
     "LICENSE"
   ],
@@ -51,12 +50,12 @@
     "webpack-cli": "^4.9.2"
   },
   "scripts": {
-    "clean": "rm -fr dist dist-dev dist-prod coverage",
-    "build": "rm -fr dist dist-prod && webpack && mv dist dist-prod",
-    "build-dev": "rm -fr dist dist-dev && FORCE_FETCH_ROOT_KEY=1 webpack --mode development && mv dist dist-dev",
-    "start": "npm run build-dev && http-server dist-dev --proxy https://ic0.app/",
-    "start-testnet": "npm run build-dev && http-server dist-dev --proxy https://identity.dfinity.network/",
-    "start-local": "npm run build-dev && http-server dist-dev --proxy http://localhost:8000",
+    "clean": "rm -fr dist coverage",
+    "build": "rm -fr dist && webpack",
+    "build-dev": "rm -fr dist && FORCE_FETCH_ROOT_KEY=1 webpack --mode development",
+    "start": "npm run build-dev && http-server dist --proxy https://ic0.app/",
+    "start-testnet": "npm run build-dev && http-server dist --proxy https://identity.dfinity.network/",
+    "start-local": "npm run build-dev && http-server dist --proxy http://localhost:8000",
     "lint": "npx eslint src",
     "lint:fix": "npx eslint --fix src",
     "test:coverage": "jest --verbose --collectCoverage",
