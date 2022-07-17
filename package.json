@@ -56,6 +56,7 @@
     "build-dev": "rm -fr dist dist-dev && FORCE_FETCH_ROOT_KEY=1 webpack --mode development && mv dist dist-dev",
     "start": "npm run build-dev && http-server dist-dev --proxy https://ic0.app/",
     "start-testnet": "npm run build-dev && http-server dist-dev --proxy https://identity.dfinity.network/",
+    "start-local": "npm run build-dev && http-server dist-dev --proxy http://localhost:8000",
     "lint": "npx eslint src",
     "lint:fix": "npx eslint --fix src",
     "test:coverage": "jest --verbose --collectCoverage",
